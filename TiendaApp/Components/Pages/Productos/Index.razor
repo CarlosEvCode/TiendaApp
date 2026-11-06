@@ -1,0 +1,68 @@
+﻿@page "/productos"
+@inject IProductoService Servicio
+@inject IJSRuntime JS
+
+
+<PageTitle>Productos</PageTitle>
+
+<h3>Productos</h3>
+<a href="/productos/crear" class="btn btn-primary mb-3">Nuevo Producto</a>
+
+@if (productos is null) 
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos disponibles.</p>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Marca</th>
+                <th>Descripcion</th>
+                <th class="text-end">Precio</th>
+                <th class="text-end">Stock</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in productos)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.Marca?.Nombre</td>
+                    <td>@p.Descripcion</td>
+                    <td class="text-end">@p.Precio</td>
+                    <td class="text-end">@p.Stock</td>
+                    <td class="text-end">
+                        <a href="/productos/editar/@p.Id" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => Eliminar(p)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+@code {
+    private List<Producto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Servicio.ListarAsync();
+    }
+
+
+    private async Task Eliminar(Producto p)
+    {
+        var confirmar = await JS.InvokeAsync<bool>("confirm", $"¿Está seguro de eliminar el producto {p.Descripcion}?");
+        if (!confirmar) return;
+
+        await Servicio.EliminarAsync(p.Id);
+        productos!.Remove(p); //Evita que hagamos una segunda consulta a la BD
+    }
+}

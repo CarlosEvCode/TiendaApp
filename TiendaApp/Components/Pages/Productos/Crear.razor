@@ -1,0 +1,26 @@
+﻿@page "/productos/crear"
+@inject IProductoService Servicio
+@inject NavigationManager Nav
+
+<PageTitle>Nuevo Producto</PageTitle>
+
+<h3>Nuevo producto</h3>
+
+<ProductoForm Modelo="producto" Marcas="marcas" OnGuardar="Guardar"/>
+
+@code {
+    private Producto producto = new(); //Inicializando
+    private List<Marca> marcas = []; //Inicializando
+
+    protected override async Task OnInitializedAsync()
+    {
+        marcas = await Servicio.ListarMarcasAsync(); //La UI requiere la lista de marcas primero
+    }
+
+    private async Task Guardar()
+    {
+        await Servicio.CrearAsync(producto);
+        Nav.NavigateTo("/productos"); //Index.razor @page
+    }
+
+}
